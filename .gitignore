@@ -1,6 +1,13 @@
-# Build Folders (you can keep bin if you'd like, to store dlls and pdbs)
+*.suo
+*.user
+*.sln.cache
+Debug
 bin
 obj
+ipch
+packages
+build
+NAntTools.0.91
 
-# mstest test results
-TestResults
+TestResult.xml
+all.sdf
