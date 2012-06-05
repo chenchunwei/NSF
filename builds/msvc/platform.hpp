@@ -1,0 +1,4 @@
+#ifndef __NSF_PLATFORM_HPP_INCLUDED__
+#define __NSF_PLATFORM_HPP_INCLUDED__
+#define NSF_WINDOWS
+#endif
