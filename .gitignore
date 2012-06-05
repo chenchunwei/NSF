@@ -7,6 +7,7 @@ obj
 ipch
 packages
 build
+lib
 NAntTools.0.91
 
 TestResult.xml

@@ -14,13 +14,19 @@
     <ClInclude Include="..\..\..\include\nsf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\thread.h">
+    <ClInclude Include="..\..\..\src\windows.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\platform.h">
+    <ClInclude Include="..\..\..\src\node.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\node.h">
+    <ClInclude Include="..\..\..\src\thread.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\platform.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\libzmq.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -47,7 +47,12 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>../../../lib/libnsf.dll</OutputFile>
+      <AdditionalLibraryDirectories>E:\git\NSF\foreign\libzmq;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>..\..\..\foreign\libzmq\libzmq.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>copy ..\platform.hpp ..\..\..\src</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -64,9 +69,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\nsf.h" />
-    <ClInclude Include="..\..\..\src\node.h" />
-    <ClInclude Include="..\..\..\src\thread.h" />
-    <ClInclude Include="..\platform.h" />
+    <ClInclude Include="..\..\..\src\libzmq.hpp" />
+    <ClInclude Include="..\..\..\src\node.hpp" />
+    <ClInclude Include="..\..\..\src\platform.hpp" />
+    <ClInclude Include="..\..\..\src\thread.hpp" />
+    <ClInclude Include="..\..\..\src\windows.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\nsf.cpp" />
