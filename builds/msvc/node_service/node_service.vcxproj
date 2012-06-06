@@ -63,6 +63,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\zeromq-2.2.0\builds\msvc\libzmq\libzmq.vcxproj">
+      <Project>{641c5f36-32ee-4323-b740-992b651cf9d6}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\libnsf\libnsf.vcxproj">
       <Project>{8342d350-9e84-41da-afc8-72f4ba8b7f9f}</Project>
     </ProjectReference>

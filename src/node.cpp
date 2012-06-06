@@ -18,19 +18,19 @@ nsf::node_t::~node_t()
 
 int nsf::node_t::set_heartbeat(int h)
 {
-	this->heartbeat=h;
+	this->heartbeat = h;
 	return 1;
 }
 
 int nsf::node_t::set_id(nsf_id_t *id)
 {
-	this->id=id;
+	this->id = id;
 	return 1;
 }
 
 int nsf::node_t::associate(char *addr)
 {
-	this->associate_addr=addr;
+	this->associate_addr = addr;
 	return 1;
 }
 
@@ -67,8 +67,8 @@ int nsf::node_t::bind(char *addr)
 int nsf::node_t::reply(char *r)
 {
 	zmq_msg_t reply;
-	zmq_msg_init_size(&reply, strlen(r)+1);
-	memcpy(zmq_msg_data(&reply), r, strlen(r)+1);
+	zmq_msg_init_size(&reply, strlen(r) + 1);
+	memcpy(zmq_msg_data(&reply), r, strlen(r) + 1);
 	zmq_send(this->libzmq_s, &reply, 0);
 	zmq_msg_close(&reply);
 
