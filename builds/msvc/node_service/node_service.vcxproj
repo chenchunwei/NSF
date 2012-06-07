@@ -72,6 +72,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\tests\test_service.cpp" />
+    <ClCompile Include="..\..\..\tests\test_zmq_service.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\tests\testutil.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,7 @@
 #include "testutil.hpp"
 
+#ifndef TEST_ZMQ
+
 #include <iostream>
 #include <time.h>
 
@@ -35,41 +37,31 @@ int message_count;
 char *message;
 char *addr;
 
-void worker_routine(void *arg)
-{
-	//  One I/O thread in the thread pool will do.
-	zmq::context_t ctx (1);
-
-	//  This client is a requester.
-	zmq::socket_t s (ctx, ZMQ_REQ);
-
-	//  Connect to the server.
-	s.connect (addr);
-
-	unsigned int start = clock();
-
-	// Send 20 requests and receive 20 replies.
-	for (int i = 0; i != message_count; i++) {
-
-		//  Send the request. No point in filling the content in as server
-		//  is a dummy and won't use it anyway.
-		zmq::message_t request(strlen(message) + 1);
-		memcpy(request.data(), message, strlen(message) + 1);
-		s.send (request);
-
-		//  Get the reply. 
-		zmq::message_t reply;
-		s.recv(&reply);
-	}
-
-	int cost = clock() - start;
-	std::cout << "Time taken in milliseconds: " << cost << endl;
-	std::cout << "message per second: " << ((float)message_count / (float)cost) * 1000 << endl;
-	std::cout << "milliseconds per message: " << (float)cost / (float)message_count << endl;
-}
+//no router
+//void worker_routine(void *arg)
+//{
+//	zmq::context_t *ctx = (zmq::context_t *)arg;
+//	zmq::socket_t s (*ctx, ZMQ_REQ);
+//	s.connect (addr);
+//
+//	unsigned int start = clock();
+//
+//	for (int i = 0; i != message_count; i++) {
+//		zmq::message_t request(strlen(message) + 1);
+//		memcpy(request.data(), message, strlen(message) + 1);
+//		s.send (request);
+//		zmq::message_t reply;
+//		s.recv(&reply);
+//	}
+//
+//	int cost = clock() - start;
+//	std::cout << "Time taken in milliseconds: " << cost << endl;
+//	std::cout << "message per second: " << ((float)message_count / (float)cost) * 1000 << endl;
+//	std::cout << "milliseconds per message: " << (float)cost / (float)message_count << endl;
+//}
 void worker_routine_sync(void *arg)
 {
-	void *ctx = zmq_init(1);
+	void *ctx = (zmq::context_t *)arg;
 	void *requester = zmq_socket(ctx, ZMQ_REQ);
 	zmq_connect(requester, addr);
 
@@ -92,11 +84,10 @@ void worker_routine_sync(void *arg)
 	std::cout << "milliseconds per message: " << (float)cost / (float)message_count << endl;
 
 	zmq_close(requester);
-	zmq_term(ctx);
 }
 void worker_routine_async(void *arg)
 {
-	void *ctx = zmq_init(1);
+	void *ctx = (zmq::context_t *)arg;
 	void *requester = zmq_socket(ctx, ZMQ_XREQ);//ZMQ_XREQ?
 	zmq_connect(requester, addr);
 
@@ -136,6 +127,56 @@ void worker_routine_async(void *arg)
 	zmq_close(requester);
 	zmq_term(ctx);
 }
+//int main(int argc, char *argv[])
+//{
+//	addr = argv[1];
+//	message_count = atoi(argv[2]);
+//	message = argv[3];
+//	thread_count = atoi(argv[4]);
+//
+//	void *ctx = zmq_init(1);
+//
+//	if(thread_count <= 1) {
+//		worker_routine_sync(ctx);
+//		return 0;
+//	}
+//
+//	for (int i = 0; i != thread_count; i++){
+//		//_beginthread(worker_routine_sync, 0, ctx);
+//		//_beginthread(worker_routine_async, 0, ctx);
+//		_beginthread(worker_routine_sync, 0, ctx);
+//	}
+//
+//	char c;
+//	cin >> c;
+//
+//	return 0;
+//}
+
+//local router
+void worker_routine(void *arg)
+{
+	void *ctx = (zmq::context_t *)arg;
+	void *requester = zmq_socket(ctx, ZMQ_REQ);
+	zmq_connect(requester, "inproc://router");
+	
+	unsigned int start = clock();
+	for(int i = 0; i < message_count; i++)
+	{
+		zmq_msg_t request;
+		zmq_msg_init_size(&request, strlen(message) + 1);
+		memcpy(zmq_msg_data(&request), message, strlen(message) + 1);
+		zmq_send(requester, &request, 0);
+		zmq_msg_close(&request);
+		char *r = s_recv(requester);
+		if(strlen(r) <= 0)
+			printf("wrong return: %s\n", r);
+	}
+	int cost = clock() - start;
+	std::cout << "Time taken in milliseconds: " << cost << endl;
+	std::cout << "message per second: " << ((float)message_count / (float)cost) * 1000 << endl;
+	std::cout << "milliseconds per message: " << (float)cost / (float)message_count << endl;
+}
 int main(int argc, char *argv[])
 {
 	addr = argv[1];
@@ -143,19 +184,23 @@ int main(int argc, char *argv[])
 	message = argv[3];
 	thread_count = atoi(argv[4]);
 
-	if(thread_count <= 1) {
-		worker_routine(NULL);
-		return 0;
-	}
+	void *context = zmq_init (1);
 
-	for (int i = 0; i != thread_count; i++){
-		//_beginthread(worker_routine_sync, 0, NULL);
-		_beginthread(worker_routine_async, 0, NULL);
-		//_beginthread(worker_routine, 0, NULL);
-	}
+    void *router = zmq_socket (context, ZMQ_ROUTER);
+    zmq_bind(router, "inproc://router");
+
+    void *dealer = zmq_socket (context, ZMQ_DEALER);
+    zmq_connect(dealer, addr);
+
+	for (int i = 0; i != thread_count; i++)
+		_beginthread(worker_routine, 0, context);
+
+    zmq_device(ZMQ_QUEUE, router, dealer);
 
 	char c;
 	cin >> c;
-
-	return 0;
 }
+
+//remote router
+
+#endif

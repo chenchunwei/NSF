@@ -1,4 +1,7 @@
 #include "testutil.hpp"
+
+#ifndef TEST_ZMQ
+
 #include "../src/libzmq.hpp"
 #include "../foreign/libzmq/zmq.hpp"
 
@@ -37,30 +40,30 @@ int trace = 0;
 
 
 //zmq recv
-int main(int argc, char *argv[])
-{
-	trace = atoi(argv[1]);
-
-	char *addr = "tcp://*:8010";
-	void *ctx = zmq_init(1);
-	void *responser = zmq_socket(ctx, ZMQ_REP);
-	zmq_bind(responser, addr);
-
-	cout << "run at " << addr << endl;
-
-	while(1)
-	{
-		char *r = s_recv(responser);
-		
-		if(trace)
-			printf("recv: %s\n", r);
-		zmq_msg_t reply;
-		zmq_msg_init_size(&reply, strlen(r) + 1);
-		memcpy(zmq_msg_data(&reply), r, strlen(r) + 1);
-		zmq_send(responser, &reply, 0);
-		zmq_msg_close(&reply);
-	}
-}
+//int main(int argc, char *argv[])
+//{
+//	trace = atoi(argv[1]);
+//
+//	char *addr = "tcp://*:8010";
+//	void *ctx = zmq_init(1);
+//	void *responser = zmq_socket(ctx, ZMQ_REP);
+//	zmq_bind(responser, addr);
+//
+//	cout << "run at " << addr << endl;
+//
+//	while(1)
+//	{
+//		char *r = s_recv(responser);
+//		
+//		if(trace)
+//			printf("recv: %s\n", r);
+//		zmq_msg_t reply;
+//		zmq_msg_init_size(&reply, strlen(r) + 1);
+//		memcpy(zmq_msg_data(&reply), r, strlen(r) + 1);
+//		zmq_send(responser, &reply, 0);
+//		zmq_msg_close(&reply);
+//	}
+//}
 
 
 //zmq poll
@@ -97,7 +100,7 @@ int main(int argc, char *argv[])
 //	}
 //}
 
-/*
+
 //zmq worker
 void worker_routine (void *arg)
 {
@@ -107,22 +110,36 @@ void worker_routine (void *arg)
 
 	cout << "worker running" << endl;
 
+	int size;
 	while (true) {
 		if(trace)
 			printf("work_%d waiting...\n", GetCurrentThreadId());
-		char *r = s_recv(s);
-		if(trace)
+		if(trace) {
+			char *r = s_recv(s);
 			printf("work_%d recv: %s\n", GetCurrentThreadId(), r);
-		Sleep(1);
-		s_send(s, r);
-		if(trace)
+			s_send(s, r);
 			printf("work_%d reply: %s\n", GetCurrentThreadId(), r);
-		//delete r;
+		} else {
+			//recv
+			zmq_msg_t message;
+			zmq_msg_init(&message);
+			zmq_recv(s, &message, 0);
+			size = zmq_msg_size(&message);
+			zmq_msg_close(&message);
+			//send
+			zmq_msg_init_size(&message, size + 1);
+			memset(zmq_msg_data(&message), '0', size + 1);
+			zmq_send(s, &message, 0);
+			zmq_msg_close(&message);
+			//clear
+			//free(&size);
+		}
 	}
 }
 int main(int argc, char *argv[])
 {
 	trace = atoi(argv[1]);
+	int worker_count = atoi(argv[2]);
 
 	zmq::context_t ctx(1);
 
@@ -135,7 +152,7 @@ int main(int argc, char *argv[])
 	workers.bind("inproc://workers");
 	cout << "inproc backend" << endl;
 
-	for (int i = 0; i != 10; i++)
+	for (int i = 0; i != worker_count; i++)
 		_beginthread(worker_routine, 0, &ctx);
 
 	cout << "workers ready" << endl;
@@ -144,4 +161,5 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
-*/
+
+#endif
