@@ -1,6 +1,9 @@
 #ifndef __NSF_ZMQ_HPP_INCLUDED__
 #define __NSF_ZMQ_HPP_INCLUDED__
 #include "../foreign/libzmq/zmq.hpp"
+#include <iostream>
+#include <iomanip>
+#include "../../../zeromq-2.2.0/src/stdint.hpp"
 
 static char *s_recv(void *socket) 
 {
@@ -22,6 +25,15 @@ static void s_send(void *socket, char *str)
 	zmq_msg_init_size(&reply, strlen(str) + 1);
 	memcpy(zmq_msg_data(&reply), str, strlen(str) + 1);
 	zmq_send(socket, &reply, 0);
+	zmq_msg_close(&reply);
+}
+
+static void s_send_more(void *socket, char *str)
+{
+	zmq_msg_t reply;
+	zmq_msg_init_size(&reply, strlen(str) + 1);
+	memcpy(zmq_msg_data(&reply), str, strlen(str) + 1);
+	zmq_send(socket, &reply, ZMQ_SNDMORE);
 	zmq_msg_close(&reply);
 }
 

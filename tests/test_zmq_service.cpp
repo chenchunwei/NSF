@@ -8,6 +8,7 @@
 using namespace std;
 
 int trace = 0;
+char *addr;
 
 #ifndef TEST_ZMQ_SERVICE_WORKER
 //zmq recv
@@ -40,9 +41,10 @@ void worker_routine (void *arg)
 {
 	zmq::context_t *ctx = (zmq::context_t*)arg;
 	zmq::socket_t s(*ctx, ZMQ_REP);
-	s.connect("inproc://workers");
+	//s.connect("inproc://workers");
+	s.connect(addr);
 
-	cout << "worker running" << endl;
+	cout << "worker running, connect to " << addr << endl;
 
 	int size;
 	while (true) {
@@ -70,26 +72,27 @@ void worker_routine (void *arg)
 }
 int main(int argc, char *argv[])
 {
-	trace = atoi(argv[1]);
-	int worker_count = atoi(argv[2]);
+	addr = argv[1];
+	trace = atoi(argv[2]);
+	int worker_count = atoi(argv[3]);
 
 	zmq::context_t ctx(1);
 
-	zmq::socket_t clients(ctx, ZMQ_XREP);
-	//clients.bind("tcp://10.13.23.84:8010");
-	clients.bind("tcp://*:8010");
-	cout << "tcp frontend at tcp://*:8010" << endl;
+	zmq::socket_t front(ctx, ZMQ_ROUTER);
+	front.bind("tcp://*:8010");
+	cout << "server frontend run at tcp://*:8010" << endl;
+	//front.connect(addr);
+	cout << "server connect broker " << addr << endl;
 
-	zmq::socket_t workers(ctx, ZMQ_XREQ);
+	zmq::socket_t workers(ctx, ZMQ_DEALER);
 	workers.bind("inproc://workers");
-	cout << "inproc backend" << endl;
 
 	for (int i = 0; i != worker_count; i++)
 		_beginthread(worker_routine, 0, &ctx);
 
 	cout << "workers ready" << endl;
 
-	zmq::device(ZMQ_QUEUE, clients, workers);
+	zmq::device(ZMQ_QUEUE, front, workers);	
 
 	return 0;
 }

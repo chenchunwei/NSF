@@ -3,7 +3,7 @@
 
 #define TEST_ZMQ
 #define TEST_ZMQ_SERVICE_WORKER
-#define TEST_ZMQ_CLIENT_ROUTER
+//#define TEST_ZMQ_CLIENT_ROUTER
 
 #include "../include/nsf.h"
 
